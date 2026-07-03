@@ -1,0 +1,71 @@
+import mongoose from "mongoose";
+
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    password: {
+      type: String,
+      required: true,
+      select: false,
+    },
+    role: {
+      type: String,
+      enum: ["patient", "doctor", "receptionist", "admin"],
+      required: true,
+    },
+    phone: { type: String },
+
+    gender: {
+      type: String,
+      enum: ["male", "female", "other"],
+    },
+    dateOfBirth: Date,
+
+    department: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Deparment",
+    },
+
+    consultationFee: {
+      type: Number,
+      min: 0,
+    },
+    workingHours: [
+      {
+        day: {
+          type: String,
+          enum: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+          required: true,
+        },
+        startTime: {
+          type: String,
+          required: true
+        },
+        closingTime:{
+            type: String,
+            required: true
+        },
+        isAvaliable: {
+            type: Boolean,
+            default: true
+        }
+      },
+    ],
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  { timestamps: true },
+);
+
+const User = mongoose.model("User", userSchema);
+export default User;
