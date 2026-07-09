@@ -1,4 +1,4 @@
-import jwt, { TokenExpiredError } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 
 
 const genToken = (userId,role, res,) => {

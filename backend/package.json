@@ -7,7 +7,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/index.js",
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "seed:admin": "node src/seedAdmin.js",
+    "update:admin": "node src/updateAdmin.js"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +21,7 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.7.3",
+    "nodemailer": "^9.0.3",
     "nodemon": "^3.1.14"
   }
 }
