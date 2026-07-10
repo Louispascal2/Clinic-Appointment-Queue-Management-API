@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import genToken from "../lib/utils.js";
 import MailSending from "../middleware/email.js";
 
+
 export const register = async (req, res) => {
   try {
     const { name, email, password, phone, gender, dateOfBirth } = req.body;
@@ -154,7 +155,11 @@ export const login = async (req, res) => {
       message: `Hello ${user.name}, \n\nA new login was detected on your account at ${loginTime}. \n\nNot you? Click here to logout: ${logoutUrl}\n\nIf this was you, please you can ignore this email.`
     }
 
-    MailSending(emailOptions).catch(err => console.log("Log email failed:", err));
+   try {
+    const result = await MailSending(emailOptions);
+   } catch (error) {
+     console.log("Login email failed:", error.message);
+   }
     
     res.status(200).json({
       id: user._id,
