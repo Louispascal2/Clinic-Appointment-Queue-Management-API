@@ -1,7 +1,9 @@
 import bcrypt from "bcryptjs";
 import MailSending from "../middleware/email.js";
 import User from "../models/user_model.js";
+import Department from "../models/departments_model.js"
 import dotenv from "dotenv";
+
 dotenv.config();
 
 export const createStaff = async (req, res) => {
@@ -69,3 +71,34 @@ export const createStaff = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const getAllUsers = async (req, res) => {
+  try {
+    const {role} = req.query;
+    const filter = role? {role} :{}
+
+    const users = await User.find(filter).select("-password");
+
+    res.status(200).json(users)
+  } catch (error) {
+    console.log("Error in getAllUsers controller", error);
+    res.status(500).json({message: "Interanl server error"});
+  }
+}
+
+export const updateUser = async (req, res) => {
+  try {
+    const {password, ...updates} = req.body;
+
+    const user = await User.findByIdAndUpdate(req.params.id, updates, {new: true, runValidators: true}).select("-password");
+
+    if (!user) {
+      return res.status(404).json({message: "User not found."});
+    }
+
+    res.status(200).json({message: "User updated successfully:", user});
+  } catch (error) {
+    console.log("Error in updateUser controller", error);
+    res.status(500).json({message: "Interanl server error"});
+  }
+}

@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Deparment",
     },
-
+    specialization: String,
     consultationFee: {
       type: Number,
       min: 0,
