@@ -72,6 +72,34 @@ export const createStaff = async (req, res) => {
   }
 };
 
+export const deleteStaff = async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) {
+     return res.status(404).json({messge: "User not found"}) 
+    }
+
+    res.status(200).json({message: "User deleted successfully"})
+  } catch (error) {
+    console.log("Error in deleteStaff controller", error);
+    res.status(500).json({message: "Internal server error"})
+  }
+}
+
+export const getUserById = async (req, res) => {
+  try {
+   const user = await User.findById(req.params.id).select("-password").populate("department", "name head");
+
+   if (!user) {
+    return res.status(404).json({message: "User not found"});
+   }
+
+   res.status(200).json(user)
+  } catch (error) {
+    console.log("Error in getUserById controller", error);
+    res.status(500).json({message: "Internal server error"})
+  }
+}
 export const getAllUsers = async (req, res) => {
   try {
     const {role} = req.query;
@@ -102,3 +130,99 @@ export const updateUser = async (req, res) => {
     res.status(500).json({message: "Interanl server error"});
   }
 }
+
+
+export const toggleStatus = async (req, res) => {
+  try {
+    if (req.params.id === req.user.id.toString()) {
+      return res.status(400).json({message: "You cannot change your account status."});
+    }
+
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({message: "User not found"});
+    }
+
+    user.isActive = !user.isActive;
+    await user.save();
+
+    res.status(200).json({message: `User ${user.isActive? "Activated" : "Deactivated"}`, user});
+  } catch (error) {
+    console.log("Error in toggleStatus Controller", error);
+    res.status(500).json({message: "Internal server error"});
+  }
+}
+
+
+//Self service
+
+export const getMyProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({message: "User not found"});
+    }
+
+    res.status(200).json(user)
+  } catch (error) {
+    console.log("Error in getMYProfile controller", error);
+    res.status(500).json({message: "Internal server error"});
+  }
+}
+
+export const updateMyProfile = async (req, res) => {
+  try {
+    const {password, role, isActive, ...updates} = req.body;
+
+    const user = await User.findByIdAndUpdate(req.user.id, updates, {
+      new: true, runValidators: true,
+    }).select("-password");
+
+    if (!user) {
+      return res.status(404).json({message: "User not found"})
+    }
+
+    res.status(200).json({message: "Profile updated successfully", user
+    })
+  } catch (error) {
+    console.log("Error in updateMyProfile controller", error);
+    rres.status(500).json({message: "Internal server error"});
+  }
+}
+
+export const updateMyPassword = async (req, res) => {
+  try {
+    const {currentPassword, newPassword} = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({message: "Both current and new password are required."});
+    }
+
+    if (newPassword.length < 6) {
+      res.status(400).json({message: "Password must be at least 6 characters"});
+    }
+
+    const user = await User.findById(req.user.id).select("-password");
+
+    if (!user) {
+     return res.status(404).json({message: "User not found"}); 
+    }
+
+    const matchedPassword = await bcrypt.compare(currentPasswordPassword, user.password);
+
+    if (!matchedPassword) {
+      return res.status(401).json({message: "Your current password is incorrect."});
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save()
+
+    res.status(200).json({message: "Password updated successfully."})
+  } catch (error) {
+    console.log("Error in updateMyProfile controller", error);
+    rres.status(500).json({message: "Internal server error"}); 
+  }
+}
+

@@ -4,7 +4,12 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import authRoutes from "./route/auth_routes.js";
 import userRoutes from "./route/user_route.js"
-import departmentRoutes from "./route/department_routes.js"
+import departmentRoutes from "./route/department_routes.js";
+import appointmentRoutes from "./route/appointment_route.js";
+import paymentRoutes from "./route/payment_route.js";
+import medNoteRoutes from "./route/medNote_route.js";
+import queueRoutes from "./route/queue_route.js"
+
 dotenv.config()
 
 
@@ -24,6 +29,10 @@ app.use(cookieParser())
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/department", departmentRoutes);
+app.use("/api/appointment", appointmentRoutes);
+app.use("/api/payment", paymentRoutes);
+app.use("/api/note", medNoteRoutes);
+app.use("/api/queue", queueRoutes);
 
 const port = process.env.PORT || 3000;
 

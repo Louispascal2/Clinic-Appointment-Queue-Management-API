@@ -38,9 +38,23 @@ const userSchema = new mongoose.Schema(
       ref: "Deparment",
     },
     specialization: String,
+    
     consultationFee: {
       type: Number,
       min: 0,
+    },
+    paymentPlan:{
+      type:{
+        type: String,
+        enum: ["none", "one-off", "monthly", "yearly"],
+        default: "none"
+      },
+      startDate: Date,
+      expiryDate: Date,
+      isActive: {
+        type: Boolean,
+        default: false
+      }
     },
     workingHours: [
       {

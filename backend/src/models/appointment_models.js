@@ -13,7 +13,16 @@ const appointmentSchema = new mongoose.Schema({
     },
     department:{
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Deparment"
+        ref: "Department"
+    },
+    paymentType:{
+        type: String,
+        enum: ["one-off", "monthly", "yearly", "pay-per-visit"],
+        required: true,
+    },
+    amountPaid:{
+        type: Number,
+        default: 0,
     },
     date: {
         type: Date,
@@ -21,7 +30,7 @@ const appointmentSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["pending", "checked in", "ongoing consultaion", "completed", "cancelled", "absent"],
+        enum: ["pending", "checked in", "approved", "ongoing consultation", "completed", "cancelled", "absent"],
         default: "pending"
     },
     queueNumber: {

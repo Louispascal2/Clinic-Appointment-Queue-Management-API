@@ -2,6 +2,8 @@ import User from "../models/user_model.js";
 import bcrypt from "bcryptjs";
 import genToken from "../lib/utils.js";
 import MailSending from "../middleware/email.js";
+import dotenv from "dotenv";
+dotenv.config()
 
 
 export const register = async (req, res) => {
@@ -44,39 +46,40 @@ export const register = async (req, res) => {
       verificationTokenExpiresAt: Date.now() + 10 * 60 * 1000,
     });
 
-    if (newUser) {
-      genToken(User._id, user.role, res);
       await newUser.save();
+      genToken(newUser._id, newUser.role, res);
 
-      const redirectUrl = `{req.protocol}://${req.get("host")}/api/auth/email_verified/${newUser._id} \n Verification Token: ${verificationToken}`;
+      const redirectUrl = `${req.protocol}://${req.get("host")}/api/auth/email_verified/${newUser._id}`;
 
       const options = {
         email: newUser.email,
         from: process.env.EMAIL,
-        message: `Below is your Url Link, verificationToken, and it expires in 10 minutes \n ${redirectUrl}`,
-        subject: "Url LinK",
+        message: `Below is your Url Link, verificationToken, and it expires in 10 minutes \n Link: ${redirectUrl} \n Verification Token: ${verificationToken}`,
+        subject: "Email Verification",
       };
 
-      const emailResult = await MailSending(options);
+      let emailResult;
 
-      if (!emailResult) {
-         console.log("Email failed", emailResult.response)
+      try{
+        emailResult = await MailSending(options)
+      }catch(error){
+        console.error("Error in email verification", error)
       }
 
+  
+
       res.status(201).json({
-        message: emailResult.response? "User created successfully, email sent - check your inbox"
+        message: emailResult?.response ? "User created successfully, email sent - check your inbox"
         : "User created but email failed to send.",
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
+        id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
       });
-    }else {
-      return res.status(400).json({ message: "Invalid user data" });  
-    }
+
 
   } catch (error) {
-    console.log("Error in register controller");
+    console.error("Error in register controller", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -85,7 +88,7 @@ export const email_verified = async (req, res) => {
   try {
     const {userId} = req.params;
 
-    const user = await User.params;
+    const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).json({message: "User not found"})
@@ -104,15 +107,15 @@ export const email_verified = async (req, res) => {
    user.verificationTokenExpiresAt = null;
    await user.save()
 
-   const redirectUrl = `${req.protocol}://${req.get("host")}/api/auth/email_verified/${user._id}`;
+  //  const redirectUrl = `${req.protocol}://${req.get("host")}/api/auth/email_verified/${user._id}`;
 
    res.status(200).json({
-    message: "Email verifed successfully",
+    message: "Email verified successfully",
     success: true,
     redirectUrl
    })
   } catch (error) {
-    console.log("Error in email verification", error.message); 
+    console.error("Error in email verification:", error.message); 
    res.status(500).json({ message: "Internal Server error"})
   }
 }
@@ -188,11 +191,4 @@ export const logout = async (req, res) => {
   }
 };
 
-export const getMe = async (req, res) => {
-  try {
-    res.status(200).json(req.user);
-  } catch (error) {
-    console.log("Error in get me controller");
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
+
